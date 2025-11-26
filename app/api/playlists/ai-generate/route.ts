@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     // Si no hay suficientes canciones, rellenar con canciones aleatorias de la misma emoción
     if (recommendedSongs.length < 15) {
       const additionalSongs = await songsCollection
-        .aggregate([
+        .aggregate<Song>([
           {
             $match: {
               emotion: new RegExp(emotion, 'i'),
