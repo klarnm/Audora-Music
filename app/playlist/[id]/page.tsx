@@ -8,7 +8,7 @@ import { usePlayerStore } from '@/store/playerStore';
 import MusicPlayer from '@/components/MusicPlayer';
 import Sidebar from '@/components/Sidebar';
 import Topbar from '@/components/Topbar';
-import { FaPlay, FaHeart } from 'react-icons/fa';
+import { FaPlay, FaHeart, FaEllipsisH, FaTrash, FaEdit, FaShare, FaDownload } from 'react-icons/fa';
 
 export default function PlaylistPage() {
   const { data: session, status } = useSession();
@@ -20,6 +20,9 @@ export default function PlaylistPage() {
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { setCurrentSong, setQueue, setIsPlaying, currentSong } = usePlayerStore();
 
   const fetchPlaylist = useCallback(async () => {
@@ -99,6 +102,38 @@ export default function PlaylistPage() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleDeletePlaylist = async () => {
+    if (!playlist?._id || params.id === 'liked-songs') return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/playlists/${playlist._id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        router.push('/library');
+      } else {
+        alert('Error al eliminar la playlist');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al eliminar la playlist');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleRenamePlaylist = () => {
+    const newName = window.prompt('Nuevo nombre:', playlist?.name);
+    if (newName && newName.trim()) {
+      // TODO: Implementar API para renombrar
+      alert('Función de renombrar en desarrollo');
+    }
+    setShowMenu(false);
   };
 
   if (status === 'loading' || loading) {
@@ -200,17 +235,69 @@ export default function PlaylistPage() {
                 </button>
                 <div className="flex items-center gap-4">
                   <button className="text-gray-400 hover:text-white transition-colors hover:scale-110 transform">
-                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
+                    <FaHeart className="w-8 h-8" />
                   </button>
-                  <button className="text-gray-400 hover:text-white transition-colors hover:scale-110 transform">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="1"/>
-                      <circle cx="19" cy="12" r="1"/>
-                      <circle cx="5" cy="12" r="1"/>
-                    </svg>
-                  </button>
+                  
+                  {/* Menu dropdown */}
+                  {!isLikedPlaylist && (
+                    <div className="relative">
+                      <button 
+                        onClick={() => setShowMenu(!showMenu)}
+                        className="text-gray-400 hover:text-white transition-colors hover:scale-110 transform p-2"
+                      >
+                        <FaEllipsisH className="w-8 h-8" />
+                      </button>
+
+                      {showMenu && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-40" 
+                            onClick={() => setShowMenu(false)}
+                          />
+                          <div className="absolute right-0 top-12 w-56 bg-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 py-2 z-50">
+                            <button
+                              onClick={handleRenamePlaylist}
+                              className="w-full px-4 py-3 text-left hover:bg-white/10 transition-colors flex items-center gap-3 text-white"
+                            >
+                              <FaEdit className="text-blue-400" />
+                              Renombrar playlist
+                            </button>
+                            <button
+                              onClick={() => {
+                                alert('Función de compartir en desarrollo');
+                                setShowMenu(false);
+                              }}
+                              className="w-full px-4 py-3 text-left hover:bg-white/10 transition-colors flex items-center gap-3 text-white"
+                            >
+                              <FaShare className="text-green-400" />
+                              Compartir
+                            </button>
+                            <button
+                              onClick={() => {
+                                alert('Función de descarga en desarrollo');
+                                setShowMenu(false);
+                              }}
+                              className="w-full px-4 py-3 text-left hover:bg-white/10 transition-colors flex items-center gap-3 text-white"
+                            >
+                              <FaDownload className="text-purple-400" />
+                              Descargar
+                            </button>
+                            <hr className="border-white/10 my-2" />
+                            <button
+                              onClick={() => {
+                                setShowMenu(false);
+                                setShowDeleteConfirm(true);
+                              }}
+                              className="w-full px-4 py-3 text-left hover:bg-red-500/20 transition-colors flex items-center gap-3 text-red-400"
+                            >
+                              <FaTrash />
+                              Eliminar playlist
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -326,6 +413,36 @@ export default function PlaylistPage() {
 
         <MusicPlayer />
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900 rounded-2xl border border-white/10 max-w-md w-full p-8 shadow-2xl">
+            <h2 className="text-2xl font-bold mb-2">¿Eliminar playlist?</h2>
+            <p className="text-gray-400 mb-6">
+              Esta acción no se puede deshacer. La playlist "{playlist?.name}" será eliminada permanentemente.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-semibold transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeletePlaylist}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-3 rounded-xl bg-red-600 hover:bg-red-700 font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <FaTrash />
+                {isDeleting ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
