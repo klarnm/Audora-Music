@@ -1,8 +1,17 @@
 "use client";
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
+
 export default function GestionarPage() {
+  return (
+    <Suspense>
+      <GestionarContent />
+    </Suspense>
+  );
+}
+
+function GestionarContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const accion = searchParams.get('accion');
