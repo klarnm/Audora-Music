@@ -131,8 +131,6 @@ export default function SettingsPage() {
     );
   }
 
-  if (!session?.user) return null;
-
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white pb-32 relative overflow-hidden">
       <AnimatedBackground />
