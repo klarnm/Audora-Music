@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import MusicPlayer from '@/components/MusicPlayer';
+import BillingSection from '@/components/BillingSection';
 import { FaUser, FaEnvelope, FaLock, FaBell, FaMusic, FaGlobe, FaSave, FaCheck } from 'react-icons/fa';
 
 export default function SettingsPage() {
@@ -138,20 +139,35 @@ export default function SettingsPage() {
       
       <div className="relative z-10 max-w-4xl mx-auto px-8 py-12">
         {/* Header */}
-        <div className="mb-12">
-          <button
-            onClick={() => router.push('/profile')}
-            className="mb-6 text-gray-400 hover:text-white transition-colors"
-          >
-            ← Volver al perfil
-          </button>
-          
-          <h1 className="text-5xl font-bold mb-4 bg-linear-to-r from-aurora-pink via-purple-400 to-aurora-mint bg-clip-text text-transparent">
-            Configuración
-          </h1>
-          <p className="text-gray-400 text-lg">
-            Administra tu cuenta y preferencias
-          </p>
+        <div className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <button
+              onClick={() => router.push('/profile')}
+              className="mb-6 text-gray-400 hover:text-white transition-colors"
+            >
+              ← Volver al perfil
+            </button>
+            <h1 className="text-5xl font-bold mb-4 bg-linear-to-r from-aurora-pink via-purple-400 to-aurora-mint bg-clip-text text-transparent">
+              Configuración
+            </h1>
+            <p className="text-gray-400 text-lg">
+              Administra tu cuenta y preferencias
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => router.push('/settings')}
+              className="px-4 py-2 rounded-xl font-bold bg-white/10 border border-white/20 text-white hover:bg-aurora-pink/30 transition-colors"
+            >
+              Preferencias
+            </button>
+            <button
+              onClick={() => router.push('/settings/planes')}
+              className="px-4 py-2 rounded-xl font-bold bg-linear-to-r from-aurora-pink to-purple-500 text-white border border-white/20 hover:scale-105 transition-transform"
+            >
+              Planes Premium
+            </button>
+          </div>
         </div>
 
         {/* Success/Error Messages */}
@@ -268,6 +284,40 @@ export default function SettingsPage() {
           </form>
         </div>
 
+        {/* Facturación / Descubre nuestros planes */}
+        <div className="mb-8 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden">
+          <div className="p-6 border-b border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-aurora-mint text-2xl">💳</span>
+              <h2 className="text-2xl font-bold">Descubre nuestros planes</h2>
+            </div>
+            <button
+              onClick={() => router.push('/settings/planes')}
+              className="px-4 py-2 rounded-xl font-bold bg-linear-to-r from-aurora-mint to-aurora-pink text-white border border-white/20 hover:scale-105 transition-transform"
+            >
+              Ver catálogo de planes
+            </button>
+          </div>
+          <div className="p-6 text-gray-300">
+            Explora los diferentes planes Premium y elige el que mejor se adapte a ti. Puedes gestionar tu suscripción y ver tu historial de pagos aquí próximamente.
+          </div>
+        </div>
+
+        {/* Facturación visual (BillingSection) */}
+        <BillingSection
+          billing={{
+            plan: 'Premium',
+            status: 'active',
+            renewalDate: '2025-12-31',
+            paymentMethod: 'Visa **** 4242',
+            history: [
+              { id: '1', date: '2025-11-30', amount: 99, status: 'paid' },
+              { id: '2', date: '2025-10-30', amount: 99, status: 'paid' },
+              { id: '3', date: '2025-09-30', amount: 99, status: 'paid' },
+            ],
+          }}
+        />
+
         {/* Preferences */}
         <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden">
           <div className="p-6 border-b border-white/10">
@@ -276,7 +326,6 @@ export default function SettingsPage() {
               Preferencias
             </h2>
           </div>
-          
           <div className="p-6 space-y-6">
             {/* Language */}
             <div>
@@ -294,7 +343,6 @@ export default function SettingsPage() {
                 <option value="pt">Português</option>
               </select>
             </div>
-
             {/* Audio Quality */}
             <div>
               <label className="flex items-center gap-3 text-sm font-semibold mb-2">
@@ -311,7 +359,6 @@ export default function SettingsPage() {
                 <option value="high">Alta (320 kbps)</option>
               </select>
             </div>
-
             {/* Notifications */}
             <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
               <div className="flex items-center gap-3">
@@ -334,7 +381,6 @@ export default function SettingsPage() {
                 />
               </button>
             </div>
-
             {/* Autoplay */}
             <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
               <div className="flex items-center gap-3">
@@ -357,7 +403,6 @@ export default function SettingsPage() {
                 />
               </button>
             </div>
-
             <button
               onClick={handleSavePreferences}
               disabled={saving}

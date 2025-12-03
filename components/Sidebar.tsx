@@ -9,7 +9,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
-    { icon: FaHome, label: 'Inicio', href: '/' },
+    { icon: FaHome, label: 'Inicio', href: '/dashboard' },
     { icon: FaSearch, label: 'Buscar', href: '/search' },
     { icon: FaBook, label: 'Tu Biblioteca', href: '/library' },
   ];
@@ -27,7 +27,7 @@ export default function Sidebar() {
       <div className="absolute bottom-0 left-0 w-full h-40 bg-linear-to-t from-aurora-purple-deep/10 to-transparent pointer-events-none"></div>
       
       {/* Logo */}
-      <Link href="/" className="mb-8 relative z-10 hover:scale-110 transition-transform duration-300 cursor-pointer group">
+      <Link href="/dashboard" className="mb-8 relative z-10 hover:scale-110 transition-transform duration-300 cursor-pointer group">
         <div className="w-16 h-16 relative rounded-2xl overflow-hidden bg-linear-to-br from-aurora-pink/10 to-purple-600/10 backdrop-blur-sm border border-white/10 group-hover:border-aurora-pink/50 transition-all">
           <Image
             src="/logo.png"

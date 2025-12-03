@@ -1,166 +1,100 @@
-'use client';
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { Song } from '@/types/models';
-import { usePlayerStore } from '@/store/playerStore';
-import MusicPlayer from '@/components/MusicPlayer';
-import Sidebar from '@/components/Sidebar';
-import Topbar from '@/components/Topbar';
-import PlaylistCard from '@/components/PlaylistCard';
+import Link from 'next/link';
+import Image from 'next/image';
+
 import AnimatedBackground from '@/components/AnimatedBackground';
-import AlbumCarousel from '@/components/AlbumCarousel';
 
 export default function Home() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { setCurrentSong, setQueue, setIsPlaying } = usePlayerStore();
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
-  }, [status, router]);
-
-  useEffect(() => {
-    fetchSongs();
-  }, []);
-
-  const fetchSongs = async () => {
-    try {
-      const res = await fetch('/api/songs?limit=100');
-      const data = await res.json();
-      setSongs(data.songs);
-      setQueue(data.songs);
-    } catch (error) {
-      console.error('Error fetching songs:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Agrupar canciones por género para crear "playlists"
-  const getGenrePlaylists = () => {
-    const genres = new Map<string, Song[]>();
-    songs.forEach(song => {
-      if (!genres.has(song.genre)) {
-        genres.set(song.genre, []);
-      }
-      genres.get(song.genre)?.push(song);
-    });
-    return Array.from(genres.entries()).map(([genre, songs]) => ({
-      title: genre,
-      songs
-    }));
-  };
-
-  if (status === 'loading' || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="aurora-gradient w-20 h-20 rounded-full animate-pulse" />
-      </div>
-    );
-  }
-
-  if (!session) {
-    return null;
-  }
-
-  const genrePlaylists = getGenrePlaylists();
-
   return (
-    <div className="h-screen flex bg-black overflow-hidden relative">
+    <main className="min-h-screen bg-black text-aurora-text-primary flex items-center relative overflow-hidden">
+      {/* Fondo de video en bucle con overlay aurora */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        style={{ opacity: 0.7 }}
+      >
+        <source src="/aurora-bg.mp4" type="video/mp4" />
+      </video>
+      {/* Overlay de colores aurora */}
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{
+        background: 'radial-gradient(ellipse at 20% 30%, #FF4E88 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, #7FDBCA 0%, transparent 60%), radial-gradient(ellipse at 50% 80%, #8A2BE2 0%, transparent 70%)',
+        opacity: 0.45
+      }} />
+      {/* Animación de puntos flotantes */}
       <AnimatedBackground />
-      
-      {/* Sidebar */}
-      <Sidebar />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar />
-
-        {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto bg-linear-to-b from-gray-900 to-black pb-32">
-          <div className="p-8">
-            {/* Welcome section */}
-            <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-linear-to-r from-white via-aurora-pink to-aurora-mint mb-12 drop-shadow-[0_0_20px_rgba(255,78,136,0.3)] hover:scale-105 transition-transform duration-300 inline-block cursor-pointer">
-              Bienvenido
-            </h2>
-
-            {/* Featured Carousel */}
-            <div className="mb-16">
-              <h3 className="text-2xl font-bold text-white mb-8">Destacados</h3>
-              <AlbumCarousel
-                songs={songs.slice(0, 20)}
-                onPlay={(song) => {
-                  setCurrentSong(song);
-                  setIsPlaying(true);
-                }}
-              />
+      <div className="relative z-10 container mx-auto px-6 lg:px-20 py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* LEFT: main copy */}
+          <div className="lg:col-span-7">
+            <div className="flex flex-col gap-4 mb-10">
+              <div className="flex items-center gap-6">
+                <div className="relative w-28 h-28 sm:w-36 sm:h-36 md:w-48 md:h-48 rounded-2xl overflow-hidden drop-shadow-2xl shrink-0">
+                  <Image src="/logo.png" alt="Audora" fill className="object-contain" priority />
+                </div>
+                <h1
+                  style={{ fontFamily: 'var(--font-sans, Arial, Helvetica, sans-serif)' }}
+                  className="font-extrabold text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight mb-2 bg-clip-text text-transparent bg-linear-to-r from-aurora-pink via-aurora-purple to-aurora-mint"
+                >
+                  AUDORA
+                </h1>
+              </div>
+              <p className="text-white text-lg sm:text-xl font-medium mt-2">Un reproductor para todos tus sentimientos</p>
             </div>
 
-            {/* Quick Access Grid */}
-            <div className="mb-16">
-              <h3 className="text-2xl font-bold text-white mb-6">Acceso rápido</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {songs.slice(0, 6).map((song) => (
-                <button
-                  key={song._id?.toString()}
-                  onClick={() => {
-                    setCurrentSong(song);
-                    setIsPlaying(true);
-                  }}
-                  className="bg-white/10 hover:bg-white/25 rounded-lg flex items-center overflow-hidden group transition-all hover:scale-105 hover:shadow-2xl hover:shadow-aurora-pink/20 border border-white/5 hover:border-aurora-pink/30 backdrop-blur-xl relative"
-                >
-                  <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                  <div className="w-20 h-20 bg-linear-to-br from-purple-600 to-pink-600 flex items-center justify-center shrink-0 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-linear-to-tr from-white/20 to-transparent"></div>
-                    <span className="text-3xl group-hover:scale-110 transition-transform duration-300 relative z-10">🎵</span>
-                  </div>
-                  <div className="px-4 flex-1 text-left relative z-10">
-                    <p className="text-white font-semibold truncate group-hover:text-aurora-pink transition-colors">{song.title}</p>
-                    <p className="text-gray-400 text-sm truncate group-hover:text-aurora-mint/80 transition-colors">{song.artist}</p>
-                  </div>
-                </button>
-              ))}
+            <div className="mb-10">
+              <p className="text-white text-xl sm:text-2xl font-semibold mb-4 max-w-2xl">Descubre música nueva y crea playlists personalizadas con ayuda de IA.</p>
+              <p className="text-white text-base sm:text-lg mb-4 max-w-2xl">Regístrate para guardar tus favoritos y escuchar en cualquier dispositivo.</p>
+            </div>
+
+            <div className="flex gap-4 mb-10">
+              <Link href="/register" className="inline-block bg-aurora-mint text-black px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
+                Regístrate
+              </Link>
+              <Link href="/login" className="inline-block border border-white/20 px-6 py-3 rounded-full text-white hover:bg-white/5 transition">
+                Iniciar sesión
+              </Link>
+            </div>
+
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-white text-base max-w-xl mb-2">
+              <li>• Listas curadas y recomendaciones personalizadas</li>
+              <li>• Reproductor con ecualizador y colas inteligentes</li>
+              <li>• Sincroniza tu biblioteca en todos los dispositivos</li>
+            </ul>
+          </div>
+
+          {/* RIGHT: large gradient mockup card + overflowing oval PNG */}
+          <div className="lg:col-span-5 relative">
+            <div className="w-full h-96 lg:h-[520px] rounded-2xl shadow-2xl bg-transparent">
+              {/* Center small floating label inside mockup */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-8 py-4 text-center">
+                  <p className="text-xl font-semibold text-black">Aurora Music</p>
+                  <p className="text-xs text-black/60">Tu música, en todas partes</p>
+                </div>
               </div>
             </div>
-            {/* Playlists by Genre */}
-            {genrePlaylists.slice(0, 5).map((playlist) => (
-              <section key={playlist.title} className="mb-16">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-3xl font-bold text-white hover:text-aurora-pink cursor-pointer transition-all hover:scale-105 hover:drop-shadow-[0_0_15px_rgba(255,78,136,0.5)]">
-                    {playlist.title}
-                  </h2>
-                  <button className="px-6 py-2 rounded-full bg-white/5 text-gray-400 hover:text-aurora-mint text-sm font-semibold hover:scale-105 transition-all hover:bg-white/10 border border-white/10">
-                    Ver todo
-                  </button>
-                </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-6">
-                  {playlist.songs.slice(0, 7).map((song) => (
-                    <PlaylistCard
-                      key={song._id?.toString()}
-                      title={song.title}
-                      description={`${song.artist} • ${song.genre}`}
-                      onClick={() => {
-                        setCurrentSong(song);
-                        setIsPlaying(true);
-                      }}
-                    />
-                  ))}
+            {/* Overflow oval PNG — positioned to the right and vertically centered */}
+            <div className="absolute top-1/2 right-0 -translate-y-1/2 pointer-events-none">
+              <div className="relative w-64 sm:w-80 md:w-96 lg:w-[480px] xl:w-[560px] -mr-12">
+                <div className="rounded-full overflow-hidden drop-shadow-2xl">
+                  <Image
+                    src="/F_LP.png"
+                    alt="Fondo Audora"
+                    width={1200}
+                    height={1200}
+                    className="object-cover w-full h-full"
+                    priority
+                  />
                 </div>
-              </section>
-            ))}
+              </div>
+            </div>
           </div>
-        </main>
-
-        {/* Player */}
-        <MusicPlayer />
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

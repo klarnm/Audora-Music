@@ -28,7 +28,8 @@ export default function LoginPage() {
     if (result?.error) {
       setError('Credenciales inválidas');
     } else {
-      router.push('/');
+      // Redirect to the protected dashboard after successful login
+      router.push('/dashboard');
     }
   };
 
