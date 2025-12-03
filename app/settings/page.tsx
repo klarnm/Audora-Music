@@ -304,6 +304,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Facturación visual (BillingSection) */}
+        <div>TEST FACTURACIÓN</div>
         <BillingSection
           billing={{
             plan: 'Premium',
